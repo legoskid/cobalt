@@ -33,10 +33,9 @@ runs:
         run: |
           cd cobalt/src
           gn_flags=()
-          if [[ "${{ matrix.platform }}" == *"tvos"* ]]; then
-            # TvOS does not use RBE unless it's sccache
-            gn_flags+=(--no-rbe)
-          fi
+          # GitHub-hosted runners do not have the credentials required for
+          # reclient/siso remote execution, so disable RBE in CI by default.
+          gn_flags+=(--no-rbe)
           if [[ $ENABLE_SCCACHE == "true" ]]; then
             gn_flags+=(--use-sccache)
           fi
