@@ -89,7 +89,7 @@ jobs:
         shell: bash
         run: |
           set -x
-          build_runners=$(cat ${GITHUB_WORKSPACE}/.github/config/${{ inputs.platform }}.json | jq -c '.build_runners // ["self-hosted", "chrobalt-linux-runner"]' )
+          build_runners=$(cat ${GITHUB_WORKSPACE}/.github/config/${{ inputs.platform }}.json | jq -c '.build_runners // ["ubuntu-latest"]' )
           echo "build_runners=${build_runners}" >> $GITHUB_OUTPUT
       - name: Set build targets
         id: set-targets
@@ -326,7 +326,7 @@ jobs:
   # Builds, tags, and pushes Cobalt docker build images to ghr.
   docker-build-image:
     needs: [initialize]
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -350,7 +350,7 @@ jobs:
   docker-unittest-image:
     if: needs.initialize.outputs.test_on_host == 'true'
     needs: [initialize]
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -373,7 +373,7 @@ jobs:
   docker-webtest-image:
     if: needs.initialize.outputs.web_tests == 'true'
     needs: [initialize]
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -659,7 +659,7 @@ jobs:
         ((inputs.nightly == 'true' || github.event_name == 'schedule') && vars.RUN_ODT_TESTS_ON_NIGHTLY != 'False') ||
         (github.event_name == 'push' && vars.RUN_ODT_TESTS_ON_POSTSUBMIT != 'False')
       )
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     name: ${{ matrix.name }}_browser_tests_on_host
     container:
       image: ${{ needs.docker-unittest-image.outputs.docker_tag }}
@@ -723,7 +723,7 @@ jobs:
     needs: [initialize, docker-unittest-image, build]
     if: needs.initialize.outputs.test_on_host == 'true'
     permissions: {}
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     name: ${{ matrix.name }}_on_host_tests_${{ matrix.shard }}
     strategy:
       fail-fast: false
@@ -762,7 +762,7 @@ jobs:
     needs: [initialize, docker-webtest-image, build]
     if: needs.initialize.outputs.web_tests == 'true'
     permissions: {}
-    runs-on: [self-hosted, chrobalt-linux-runner]
+    runs-on: ubuntu-latest
     name: ${{ matrix.name }}_web_tests
     strategy:
       fail-fast: false

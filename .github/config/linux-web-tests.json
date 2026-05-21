@@ -19,5 +19,6 @@
       "name": "x64",
       "platform": "linux-x64x11-no-starboard"
     }
-  ]
+  ],
+  "build_runners": ["ubuntu-latest"]
 }
