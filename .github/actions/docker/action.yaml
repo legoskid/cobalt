@@ -42,19 +42,31 @@ runs:
       shell: bash
 
     - name: Login to GAR
+      shell: bash
       run: |
-        # Login to GAR
-        TOKEN_ENDPOINT="http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
-        ACCESS_TOKEN=$(curl -H 'Metadata-Flavor: Google' ${TOKEN_ENDPOINT} | jq -r .access_token)
+        # Login to GAR, if running on Google infrastructure.
+        set -euo pipefail
 
-        # Login to GAR to be able to push images created by fork based PR workflows.
-        if [[ "${{ inputs.is_pr }}" == "true" ]]; then
-          printf ${ACCESS_TOKEN} | docker login -u oauth2accesstoken --password-stdin https://us-central1-docker.pkg.dev
+        TOKEN_ENDPOINT="http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+        ACCESS_TOKEN=""
+
+        if command -v getent >/dev/null 2>&1 && getent hosts metadata.google.internal >/dev/null 2>&1; then
+          ACCESS_TOKEN="$(curl -fsS -H 'Metadata-Flavor: Google' "${TOKEN_ENDPOINT}" | jq -r '.access_token // empty')"
+        else
+          echo "metadata.google.internal is unavailable; skipping GAR login."
         fi
 
-        # Login to Marketplace GAR to be able to pull base images.
-        printf ${ACCESS_TOKEN} | docker login -u oauth2accesstoken --password-stdin https://marketplace.gcr.io
-      shell: bash
+        if [[ -n "${ACCESS_TOKEN}" ]]; then
+          # Login to GAR to be able to push images created by fork based PR workflows.
+          if [[ "${{ inputs.is_pr }}" == "true" ]]; then
+           printf '%s' "${ACCESS_TOKEN}" | docker login -u oauth2accesstoken --password-stdin https://us-central1-docker.pkg.dev
+          fi
+
+         # Login to Marketplace GAR to be able to pull base images.
+         printf '%s' "${ACCESS_TOKEN}" | docker login -u oauth2accesstoken --password-stdin https://marketplace.gcr.io
+        else
+          echo "No Google access token available; continuing without GAR login."
+        fi
 
     - name: Login to GitHub Docker Registry
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
