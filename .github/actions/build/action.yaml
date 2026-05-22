@@ -36,9 +36,9 @@ runs:
           # GitHub-hosted runners do not have the credentials required for
           # reclient/siso remote execution, so disable RBE in CI by default.
           gn_flags+=(--no-rbe)
-          if [[ $ENABLE_SCCACHE == "true" ]]; then
-            gn_flags+=(--use-sccache)
-          fi
+          # if [[ $ENABLE_SCCACHE == "true" ]]; then
+          gn_flags+=(--use-sccache)
+          # fi
           cobalt/build/gn.py -p ${{ matrix.platform }} -C ${{ matrix.config }} "${gn_flags[@]}"
         shell: bash
       - name: Configure Siso Credential Helper
