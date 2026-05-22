@@ -126,8 +126,31 @@ runs:
         run: |
           set -ex
           cd cobalt/src
+
+          start_watchdog() {
+            (
+              while true; do
+                echo "[build-watchdog] $(date -u +"%Y-%m-%dT%H:%M:%SZ") build still running"
+                echo "[build-watchdog] top memory users:"
+                ps -eo pid,ppid,%cpu,%mem,rss,comm --sort=-rss | head -n 11
+                sleep 60
+              done
+            ) &
+            WATCHDOG_PID=$!
+          }
+
+          stop_watchdog() {
+            if [[ -n "${WATCHDOG_PID:-}" ]]; then
+              kill "${WATCHDOG_PID}" 2>/dev/null || true
+              wait "${WATCHDOG_PID}" 2>/dev/null || true
+            fi
+          }
+
+          trap stop_watchdog EXIT
+
           test_targets=$(echo '${{ steps.calculate-test-targets.outputs.test_targets_json }}' | jq -cr 'join(" ")')
-          time autoninja -C out/${{ matrix.platform }}_${{ matrix.config }} ${test_targets}
+          start_watchdog
+          time autoninja -j2 -C out/${{ matrix.platform }}_${{ matrix.config }} ${test_targets}
         shell: bash
       - name: Ninja build
         env:
@@ -136,8 +159,31 @@ runs:
         run: |
           set -ex
           cd cobalt/src
+
+          start_watchdog() {
+            (
+              while true; do
+                echo "[build-watchdog] $(date -u +"%Y-%m-%dT%H:%M:%SZ") build still running"
+                echo "[build-watchdog] top memory users:"
+                ps -eo pid,ppid,%cpu,%mem,rss,comm --sort=-rss | head -n 11
+                sleep 60
+              done
+            ) &
+            WATCHDOG_PID=$!
+          }
+
+          stop_watchdog() {
+            if [[ -n "${WATCHDOG_PID:-}" ]]; then
+              kill "${WATCHDOG_PID}" 2>/dev/null || true
+              wait "${WATCHDOG_PID}" 2>/dev/null || true
+            fi
+          }
+
+          trap stop_watchdog EXIT
+
           TARGETS=$(echo "${TARGETS_JSON}" | jq -cr '. | join(" ")')
-          time autoninja -C out/${{ matrix.platform }}_${{ matrix.config }} ${TARGETS}
+          start_watchdog
+          time autoninja -j2 -C out/${{ matrix.platform }}_${{ matrix.config }} ${TARGETS}
           if [[ $USE_SCCACHE == "true" ]]; then
             sccache --show-stats
           fi
