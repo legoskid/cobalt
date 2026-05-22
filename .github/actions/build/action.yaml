@@ -150,7 +150,7 @@ runs:
 
           test_targets=$(echo '${{ steps.calculate-test-targets.outputs.test_targets_json }}' | jq -cr 'join(" ")')
           start_watchdog
-          time autoninja -j2 -C out/${{ matrix.platform }}_${{ matrix.config }} ${test_targets}
+          time autoninja -C out/${{ matrix.platform }}_${{ matrix.config }} ${test_targets}
         shell: bash
       - name: Ninja build
         env:
@@ -183,7 +183,7 @@ runs:
 
           TARGETS=$(echo "${TARGETS_JSON}" | jq -cr '. | join(" ")')
           start_watchdog
-          time autoninja -j2 -C out/${{ matrix.platform }}_${{ matrix.config }} ${TARGETS}
+          time autoninja -C out/${{ matrix.platform }}_${{ matrix.config }} cobalt
           if [[ $USE_SCCACHE == "true" ]]; then
             sccache --show-stats
           fi
