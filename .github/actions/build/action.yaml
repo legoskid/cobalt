@@ -23,7 +23,6 @@ runs:
           rm -rf cobalt/src/out
         shell: bash
       - name: Install sccache
-        if: inputs.enable_sccache == 'true'
         uses: ./.github/actions/sccache
         with:
           sccache_gcs_key: ${{ inputs.sccache_gcs_key }}
