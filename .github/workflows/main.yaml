@@ -393,6 +393,7 @@ jobs:
       docker_tag: ${{ steps.build-docker-image.outputs.docker_tag }}
 
   build:
+    if: ${{ inputs.platform == 'debug' }}
     needs: [initialize, docker-build-image]
     permissions: {}
     runs-on: ${{ fromJSON(needs.initialize.outputs.build_runners) }}
