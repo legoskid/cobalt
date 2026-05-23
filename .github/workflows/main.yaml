@@ -393,7 +393,6 @@ jobs:
       docker_tag: ${{ steps.build-docker-image.outputs.docker_tag }}
 
   build:
-    if: ${{ inputs.platform == 'debug' }}
     needs: [initialize, docker-build-image]
     permissions: {}
     runs-on: ${{ fromJSON(needs.initialize.outputs.build_runners) }}
@@ -401,9 +400,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{ fromJson(needs.initialize.outputs.platforms) }}
-        include: ${{ fromJson(needs.initialize.outputs.includes) }}
-        config: ${{ fromJson(needs.initialize.outputs.build_configs) }}
+        include:
+          - platform: ${{ inputs.platform }}
+            name: ${{ inputs.platform }}
+            config: debug
     container:
       image: ${{ needs.docker-build-image.outputs.docker_tag }}
       options: --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor=unconfined
