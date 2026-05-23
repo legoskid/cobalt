@@ -12,7 +12,7 @@ inputs:
     required: true
   enable_sccache:
     description: Use sccache for build acceleration.
-    default: 'true'
+    default: 'false'
   sccache_gcs_key:
     description: GCS SA key to read/write to bucket
 runs:
@@ -23,6 +23,7 @@ runs:
           rm -rf cobalt/src/out
         shell: bash
       - name: Install sccache
+        if: inputs.enable_sccache == 'true'
         uses: ./.github/actions/sccache
         with:
           sccache_gcs_key: ${{ inputs.sccache_gcs_key }}
@@ -35,9 +36,9 @@ runs:
           # GitHub-hosted runners do not have the credentials required for
           # reclient/siso remote execution, so disable RBE in CI by default.
           gn_flags+=(--no-rbe)
-          # if [[ $ENABLE_SCCACHE == "true" ]]; then
-          gn_flags+=(--use-sccache)
-          # fi
+          if [[ $ENABLE_SCCACHE == "true" ]]; then
+            gn_flags+=(--use-sccache)
+          fi
           cobalt/build/gn.py -p ${{ matrix.platform }} -C ${{ matrix.config }} "${gn_flags[@]}"
         shell: bash
       - name: Configure Siso Credential Helper
@@ -183,9 +184,9 @@ runs:
           TARGETS=$(echo "${TARGETS_JSON}" | jq -cr '. | join(" ")')
           start_watchdog
           time autoninja -C out/${{ matrix.platform }}_${{ matrix.config }} cobalt
-          # if [[ $USE_SCCACHE == "true" ]]; then
-          sccache --show-stats
-          # fi
+          if [[ $USE_SCCACHE == "true" ]]; then
+            sccache --show-stats
+          fi
         shell: bash
       - name: Archive Android APKs
         if: startsWith(matrix.platform, 'android') && matrix.config == 'qa'
