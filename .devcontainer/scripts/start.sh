@@ -12,5 +12,9 @@ REPO_NAME_LABEL="$GH_REPOSITORY"
 
 REG_TOKEN=$(curl -sX POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GH_TOKEN}" https://api.github.com/repos/${GH_OWNER}/${GH_REPOSITORY}/actions/runners/registration-token | jq .token --raw-output)
 
+mkdir -p /tmp/runner-cache
+sudo rm -rf /runner-cache
+sudo ln -s /tmp/runner-cache /runner-cache
+
 /home/vscode/actions-runner/config.sh --unattended --url https://github.com/${GH_OWNER}/${GH_REPOSITORY} --token ${REG_TOKEN} --name ${RUNNER_NAME}  --labels ${USER_NAME_LABEL},${REPO_NAME_LABEL}
 /home/vscode/actions-runner/run.sh

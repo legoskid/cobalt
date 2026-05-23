@@ -39,7 +39,7 @@ runs:
           if [[ $ENABLE_SCCACHE == "true" ]]; then
             gn_flags+=(--use-sccache)
           fi
-          cobalt/build/gn.py -p ${{ matrix.platform }} -C ${{ matrix.config }} "${gn_flags[@]}"
+          cobalt/build/gn.py -p linux-x64x11 -C ${{ matrix.config }} "${gn_flags[@]}"
         shell: bash
       - name: Configure Siso Credential Helper
         shell: bash
@@ -48,7 +48,7 @@ runs:
       - name: List GN args
         run: |
           cd cobalt/src
-          gn args --list --short --overrides-only out/${{ matrix.platform }}_${{ matrix.config }}
+          gn args --list --short --overrides-only out/linux-x64x11_${{ matrix.config }}
         shell: bash
       - name: Get list of changed files
         if: github.event_name == 'pull_request'
