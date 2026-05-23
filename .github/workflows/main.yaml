@@ -43,7 +43,7 @@ env:
 jobs:
   # Retrieves configuration from json file.
   initialize:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       pull-requests: write
     env:
@@ -89,7 +89,7 @@ jobs:
         shell: bash
         run: |
           set -x
-          build_runners=$(cat ${GITHUB_WORKSPACE}/.github/config/${{ inputs.platform }}.json | jq -c '.build_runners // ["ubuntu-latest"]' )
+          build_runners=$(cat ${GITHUB_WORKSPACE}/.github/config/${{ inputs.platform }}.json | jq -c '.build_runners // ["self-hosted"]' )
           echo "build_runners=${build_runners}" >> $GITHUB_OUTPUT
       - name: Set build targets
         id: set-targets
@@ -326,7 +326,7 @@ jobs:
   # Builds, tags, and pushes Cobalt docker build images to ghr.
   docker-build-image:
     needs: [initialize]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -350,7 +350,7 @@ jobs:
   docker-unittest-image:
     if: needs.initialize.outputs.test_on_host == 'true'
     needs: [initialize]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -373,7 +373,7 @@ jobs:
   docker-webtest-image:
     if: needs.initialize.outputs.web_tests == 'true'
     needs: [initialize]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Restore CI Essentials
         uses: actions/checkout@v4
@@ -659,7 +659,7 @@ jobs:
         ((inputs.nightly == 'true' || github.event_name == 'schedule') && vars.RUN_ODT_TESTS_ON_NIGHTLY != 'False') ||
         (github.event_name == 'push' && vars.RUN_ODT_TESTS_ON_POSTSUBMIT != 'False')
       )
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.name }}_browser_tests_on_host
     container:
       image: ${{ needs.docker-unittest-image.outputs.docker_tag }}
@@ -723,7 +723,7 @@ jobs:
     needs: [initialize, docker-unittest-image, build]
     if: needs.initialize.outputs.test_on_host == 'true'
     permissions: {}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.name }}_on_host_tests_${{ matrix.shard }}
     strategy:
       fail-fast: false
@@ -762,7 +762,7 @@ jobs:
     needs: [initialize, docker-webtest-image, build]
     if: needs.initialize.outputs.web_tests == 'true'
     permissions: {}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.name }}_web_tests
     strategy:
       fail-fast: false
@@ -834,7 +834,7 @@ jobs:
         needs.browser-test-on-host.result != 'skipped'
       )
     permissions: {}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.test_target }}
     env:
       TEST_RESULTS_KEY: ${{ matrix.platform }}_${{ matrix.name }}_test_results
@@ -914,7 +914,7 @@ jobs:
     needs: [initialize, build, browser-test-on-host]
     if: always() && needs.initialize.outputs.run_browser_tests == 'true' && (needs.browser-test-on-host.result != 'skipped' && needs.browser-test-on-host.result != '')
     permissions: {}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.test_target }}
     env:
       TEST_RESULTS_KEY: ${{ matrix.platform }}_${{ matrix.name }}_browsertest_results
@@ -971,7 +971,7 @@ jobs:
     needs: [initialize, build, test-results, browser-test-results]
     if: always() && needs.initialize.result == 'success'
     permissions: {}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.name }}_tests_passing
     env:
       TEST_RESULTS_KEY: ${{ matrix.platform }}_${{ matrix.name }}_test_results

@@ -33,5 +33,5 @@
       "platform": "linux-x64x11"
     }
   ],
-  "build_runners": ["ubuntu-latest"]
+  "build_runners": ["self-hosted"]
 }
